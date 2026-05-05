@@ -1,1 +1,1 @@
-# Google_Gemma4_hackathon
+# Google_Gemma4_kaggle_hackathon
