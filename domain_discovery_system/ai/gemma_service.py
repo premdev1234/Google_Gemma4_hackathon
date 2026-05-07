@@ -109,87 +109,80 @@ def generate_response(user_prompt: str) -> Dict[str, Any]:
 # COGNITIVE PROFILE ANALYSIS
 # =========================================================
 
+# =========================================================
+# COGNITIVE PROFILE ANALYSIS
+# =========================================================
 
-def analyze_cognitive_profile(user_data: dict) -> Dict[str, Any]:
 
-    # -----------------------------------------------------
-    # EXTRACT BEHAVIOR DATA
-    # -----------------------------------------------------
-
-    behavior = user_data.get("behavior", {})
-
-    response_time = behavior.get(
-        "average_response_time",
-        0,
-    )
-
-    answer_changes = behavior.get(
-        "answer_change_count",
-        0,
-    )
-
-    inactivity_time = behavior.get(
-        "inactivity_time",
-        0,
-    )
-
-    tab_switches = behavior.get(
-        "tab_switch_count",
-        0,
-    )
+def analyze_cognitive_profile(
+    user_data: dict,
+) -> Dict[str, Any]:
 
     # -----------------------------------------------------
-    # CALCULATE BEHAVIORAL SCORES
+    # EXTRACT DATA
     # -----------------------------------------------------
 
-    hesitation_score = calculate_hesitation_score(
-        response_time=response_time,
-        answer_changes=answer_changes,
-        inactivity_time=inactivity_time,
+    traits = user_data.get(
+        "traits",
+        {},
     )
 
-    confidence_score = calculate_confidence_score(
-        hesitation_score=hesitation_score,
-        answer_changes=answer_changes,
+    behavioral_analysis = user_data.get(
+        "behavioral_analysis",
+        {},
     )
 
-    focus_score = calculate_focus_score(
-        tab_switches=tab_switches,
-        inactivity_time=inactivity_time,
-    )
-
-    behavioral_risk = calculate_behavioral_risk(
-        hesitation_score=hesitation_score,
-        confidence_score=confidence_score,
-        focus_score=focus_score,
+    contradiction_analysis = user_data.get(
+        "contradiction_analysis",
+        {},
     )
 
     # -----------------------------------------------------
-    # EXTRACT QUESTION RESPONSES
+    # EXTRACT BEHAVIORAL SCORES
     # -----------------------------------------------------
 
-    responses = user_data.get("responses", [])
+    hesitation_score = behavioral_analysis.get(
+        "hesitation_score",
+        0.0,
+    )
+
+    confidence_score = behavioral_analysis.get(
+        "confidence_score",
+        0.0,
+    )
+
+    focus_score = behavioral_analysis.get(
+        "focus_score",
+        0.0,
+    )
+
+    behavioral_risk = behavioral_analysis.get(
+        "behavioral_risk",
+        0.0,
+    )
+
+    behavior_summary = behavioral_analysis.get(
+        "behavior_summary",
+        "No behavioral summary available.",
+    )
 
     # -----------------------------------------------------
-    # CONTRADICTION ANALYSIS
+    # EXTRACT CONTRADICTION DATA
     # -----------------------------------------------------
 
-    contradictions = detect_contradictions(responses)
+    contradiction_severity = contradiction_analysis.get(
+        "contradiction_severity",
+        0.0,
+    )
 
-    contradiction_severity = calculate_contradiction_severity(contradictions)
+    contradiction_summary = contradiction_analysis.get(
+        "contradiction_summary",
+        "No contradictions detected.",
+    )
 
-    contradiction_summary = generate_contradiction_summary(contradictions)
-
-    followup_trigger = generate_followup_trigger(contradiction_severity)
-    # -----------------------------------------------------
-    # GENERATE HUMAN SUMMARY
-    # -----------------------------------------------------
-
-    behavior_summary = generate_behavior_summary(
-        hesitation_score=hesitation_score,
-        confidence_score=confidence_score,
-        focus_score=focus_score,
-        behavioral_risk=behavioral_risk,
+    followup_trigger = contradiction_analysis.get(
+        "followup_trigger",
+        {},
     )
 
     # -----------------------------------------------------
@@ -203,22 +196,27 @@ def analyze_cognitive_profile(user_data: dict) -> Dict[str, Any]:
     USER TRAITS
     =====================================
 
-    {json.dumps(user_data.get("traits", {}), indent=2)}
+    {json.dumps(traits, indent=2)}
 
     =====================================
     BEHAVIORAL ANALYSIS
     =====================================
 
-    Hesitation Score: {hesitation_score}
+    Hesitation Score:
+    {hesitation_score}
 
-    Confidence Score: {confidence_score}
+    Confidence Score:
+    {confidence_score}
 
-    Focus Score: {focus_score}
+    Focus Score:
+    {focus_score}
 
-    Behavioral Risk: {behavioral_risk}
+    Behavioral Risk:
+    {behavioral_risk}
 
     Behavior Summary:
     {behavior_summary}
+
     =====================================
     CONTRADICTION ANALYSIS
     =====================================
@@ -230,7 +228,8 @@ def analyze_cognitive_profile(user_data: dict) -> Dict[str, Any]:
     {contradiction_summary}
 
     Follow-up Trigger:
-    {followup_trigger}
+    {json.dumps(followup_trigger, indent=2)}
+
     =====================================
     TASK
     =====================================
@@ -248,7 +247,9 @@ def analyze_cognitive_profile(user_data: dict) -> Dict[str, Any]:
     9. Contradiction interpretation
     10. Need for adaptive follow-up
 
-    Be analytical and structured.
+    Be analytical, structured,
+    psychologically aware,
+    and concise.
     """
 
     # -----------------------------------------------------
@@ -258,26 +259,13 @@ def analyze_cognitive_profile(user_data: dict) -> Dict[str, Any]:
     result = generate_response(prompt)
 
     # -----------------------------------------------------
-    # ATTACH BEHAVIORAL DATA
+    # ATTACH ANALYSIS
     # -----------------------------------------------------
 
-    result["behavioral_analysis"] = {
-        "hesitation_score": hesitation_score,
-        "confidence_score": confidence_score,
-        "focus_score": focus_score,
-        "behavioral_risk": behavioral_risk,
-        "behavior_summary": behavior_summary,
-    }
-    # -----------------------------------------------------
-    # ATTACH CONTRADICTION ANALYSIS
-    # -----------------------------------------------------
+    result["behavioral_analysis"] = behavioral_analysis
 
-    result["contradiction_analysis"] = {
-        "contradictions": contradictions,
-        "contradiction_severity": contradiction_severity,
-        "contradiction_summary": contradiction_summary,
-        "followup_trigger": followup_trigger,
-    }
+    result["contradiction_analysis"] = contradiction_analysis
+
     return result
 
 
@@ -339,6 +327,74 @@ def recommend_engineering_domain(user_profile: dict):
     """
 
     return generate_response(prompt)
+
+
+# =========================================================
+# GENERATE DYNAMIC QUESTION
+# =========================================================
+
+
+def generate_dynamic_question(
+    traits: dict,
+    behavioral_analysis: dict,
+    contradiction_analysis: dict,
+):
+
+    # -----------------------------------------------------
+    # BUILD PROMPT
+    # -----------------------------------------------------
+
+    prompt = f"""
+    You are an adaptive cognitive interviewer.
+
+    =====================================
+    USER TRAITS
+    =====================================
+
+    {json.dumps(traits, indent=2)}
+
+    =====================================
+    BEHAVIORAL ANALYSIS
+    =====================================
+
+    {json.dumps(behavioral_analysis, indent=2)}
+
+    =====================================
+    CONTRADICTION ANALYSIS
+    =====================================
+
+    {json.dumps(contradiction_analysis, indent=2)}
+
+    =====================================
+    TASK
+    =====================================
+
+    Generate ONE intelligent follow-up
+    question.
+
+    Goal:
+    - clarify contradictions
+    - probe reasoning depth
+    - test confidence
+    - evaluate cognitive behavior
+
+    Rules:
+    - natural conversational tone
+    - psychologically intelligent
+    - concise
+    - high signal question
+    - avoid generic interview questions
+
+    Return ONLY the question.
+    """
+
+    # -----------------------------------------------------
+    # SEND TO GEMMA
+    # -----------------------------------------------------
+
+    result = generate_response(prompt)
+
+    return result
 
 
 # =========================================================

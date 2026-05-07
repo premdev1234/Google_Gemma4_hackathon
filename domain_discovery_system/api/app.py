@@ -7,6 +7,9 @@ import uvicorn
 from domain_discovery_system.api.routes.static_question import (
     router as static_question_router,
 )
+from domain_discovery_system.api.routes.assessment import (
+    router as assessment_router,
+)
 
 # =========================================================
 # FASTAPI APP
@@ -173,6 +176,7 @@ def serve_ui():
 # =========================================================
 
 app.include_router(static_question_router)
+app.include_router(assessment_router)
 
 # =========================================================
 # RUN SERVER
