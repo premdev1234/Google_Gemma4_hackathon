@@ -1,0 +1,727 @@
+
+<style>
+h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+body,html{margin:0;padding:0}
+#controls{display:flex;flex-wrap:wrap;gap:6px;padding:12px 12px 0;align-items:center}
+.grp-btn{padding:4px 10px;border-radius:20px;border:1px solid var(--color-border-primary);background:var(--color-background-secondary);color:var(--color-text-secondary);font-size:12px;cursor:pointer;transition:all .15s}
+.grp-btn.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+#erd-wrap{padding:8px 12px 12px;overflow:auto}
+#erd svg{max-width:100%}
+.legend{display:flex;flex-wrap:wrap;gap:8px;padding:0 12px 10px;font-size:11px;color:var(--color-text-secondary)}
+.leg{display:flex;align-items:center;gap:4px}
+.leg-dot{width:10px;height:10px;border-radius:3px}
+</style>
+<h2 class="sr-only">Cognitive Twin database schema — 30 tables organised into 8 domains with entity relationships</h2>
+<div id="controls">
+  <span style="font-size:12px;color:var(--color-text-secondary);margin-right:4px">Domain:</span>
+  <button class="grp-btn active" onclick="show('all')">All</button>
+  <button class="grp-btn" onclick="show('user')">Users &amp; Profiles</button>
+  <button class="grp-btn" onclick="show('learning')">Learning</button>
+  <button class="grp-btn" onclick="show('skills')">Skills</button>
+  <button class="grp-btn" onclick="show('interview')">Interview</button>
+  <button class="grp-btn" onclick="show('career')">Career</button>
+  <button class="grp-btn" onclick="show('system')">System</button>
+  <button class="grp-btn" onclick="show('device')">Devices &amp; Sync</button>
+</div>
+<div id="erd-wrap"><div id="erd"></div></div>
+<div class="legend">
+  <span style="font-size:11px;font-weight:500;color:var(--color-text-secondary);margin-right:4px">Domains:</span>
+  <span class="leg"><span class="leg-dot" style="background:#7F77DD"></span>Users</span>
+  <span class="leg"><span class="leg-dot" style="background:#1D9E75"></span>Learning</span>
+  <span class="leg"><span class="leg-dot" style="background:#378ADD"></span>Skills</span>
+  <span class="leg"><span class="leg-dot" style="background:#D85A30"></span>Interview</span>
+  <span class="leg"><span class="leg-dot" style="background:#BA7517"></span>Career</span>
+  <span class="leg"><span class="leg-dot" style="background:#888780"></span>System</span>
+  <span class="leg"><span class="leg-dot" style="background:#D4537E"></span>Devices</span>
+</div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad:false,theme:'base',fontFamily:'"Anthropic Sans",sans-serif',
+  themeVariables:{darkMode:dark,fontSize:'12px',fontFamily:'"Anthropic Sans",sans-serif',
+    lineColor:dark?'#9c9a92':'#73726c',textColor:dark?'#c2c0b6':'#3d3d3a',
+    primaryColor:dark?'#2a2a28':'#f1efe8',primaryBorderColor:dark?'#5f5e5a':'#b4b2a9',
+    primaryTextColor:dark?'#c2c0b6':'#3d3d3a'
+  }
+});
+
+const diagrams = {
+all:`erDiagram
+  users ||--|| user_profiles : has
+  users ||--o{ user_skills : has
+  users ||--o{ learning_sessions : attends
+  users ||--o{ user_problem_attempts : submits
+  users ||--o{ weakness_analysis : analyzed
+  users ||--o{ adaptive_schedules : receives
+  users ||--o{ reminders : has
+  users ||--o{ interview_sessions : takes
+  users ||--o{ career_recommendations : gets
+  users ||--o{ learning_roadmaps : follows
+  users ||--o{ cognitive_states : tracked_by
+  users ||--o{ ai_feedback_logs : generates
+  users ||--o{ notifications : receives
+  users ||--o{ user_activity_logs : logs
+  users ||--o{ sync_logs : syncs
+  users ||--o{ devices : owns
+  users ||--o{ user_settings : configures
+  users ||--o{ user_achievements : earns
+  users ||--o{ feedback_reports : files
+  users ||--o{ gemma_inference_metrics : triggers
+  practice_problems ||--o{ user_problem_attempts : attempted_via
+  skill_graph ||--o{ skill_graph : depends_on
+  interview_sessions ||--o{ interview_questions : contains
+  interview_questions ||--o{ interview_answers : answered_by
+  learning_roadmaps ||--o{ roadmap_steps : contains
+  achievements ||--o{ user_achievements : awarded_as
+  users {
+    uuid id PK
+    string full_name
+    string email
+    string password_hash
+    string profile_image
+    string role
+    bool is_verified
+    timestamp created_at
+    timestamp updated_at
+    timestamp last_login
+  }
+  user_profiles {
+    uuid id PK
+    uuid user_id FK
+    string career_goal
+    string experience_level
+    string education_level
+    string country
+    string preferred_language
+    string learning_style
+    float daily_study_hours
+    string focus_area
+    text bio
+    timestamp created_at
+    timestamp updated_at
+  }
+  user_skills {
+    uuid id PK
+    uuid user_id FK
+    string skill_name
+    int current_level
+    int target_level
+    float confidence_score
+    timestamp last_practiced
+    timestamp created_at
+    timestamp updated_at
+  }
+  skill_graph {
+    uuid id PK
+    string parent_skill
+    string child_skill
+    float dependency_weight
+    string difficulty_level
+    timestamp created_at
+  }
+  learning_sessions {
+    uuid id PK
+    uuid user_id FK
+    string session_type
+    timestamp start_time
+    timestamp end_time
+    int duration_minutes
+    float focus_score
+    string energy_level
+    string completion_status
+    timestamp created_at
+  }
+  practice_problems {
+    uuid id PK
+    string title
+    text description
+    string difficulty
+    string category
+    text expected_solution
+    json tags
+    timestamp created_at
+    timestamp updated_at
+  }
+  user_problem_attempts {
+    uuid id PK
+    uuid user_id FK
+    uuid problem_id FK
+    text submitted_answer
+    float evaluation_score
+    int time_taken_seconds
+    string mistake_category
+    text feedback
+    string attempt_status
+    timestamp created_at
+  }
+  weakness_analysis {
+    uuid id PK
+    uuid user_id FK
+    string skill_name
+    float weakness_score
+    text detected_issue
+    text recommended_action
+    string priority_level
+    timestamp created_at
+    timestamp updated_at
+  }
+  adaptive_schedules {
+    uuid id PK
+    uuid user_id FK
+    date schedule_date
+    string task_title
+    string task_type
+    string priority
+    int estimated_duration
+    string time_slot
+    string status
+    timestamp created_at
+    timestamp updated_at
+  }
+  reminders {
+    uuid id PK
+    uuid user_id FK
+    string title
+    text message
+    timestamp reminder_time
+    string status
+    timestamp created_at
+  }
+  interview_sessions {
+    uuid id PK
+    uuid user_id FK
+    string target_role
+    string difficulty_level
+    timestamp session_start
+    timestamp session_end
+    float overall_score
+    float communication_score
+    float technical_score
+    float confidence_score
+    timestamp created_at
+  }
+  interview_questions {
+    uuid id PK
+    uuid session_id FK
+    text question_text
+    string question_type
+    string difficulty
+    text expected_answer
+    timestamp created_at
+  }
+  interview_answers {
+    uuid id PK
+    uuid question_id FK
+    text user_answer
+    float evaluation_score
+    text feedback
+    int response_time
+    timestamp created_at
+  }
+  career_recommendations {
+    uuid id PK
+    uuid user_id FK
+    string recommended_role
+    float match_score
+    string estimated_salary
+    string market_demand
+    float difficulty_score
+    string estimated_time_to_achieve
+    text roadmap_summary
+    timestamp created_at
+  }
+  market_trends {
+    uuid id PK
+    string skill_name
+    int job_count
+    float average_salary
+    float trend_score
+    float growth_percentage
+    string source_platform
+    timestamp last_updated
+  }
+  learning_roadmaps {
+    uuid id PK
+    uuid user_id FK
+    string roadmap_title
+    string target_role
+    int estimated_duration_months
+    float completion_percentage
+    string status
+    timestamp created_at
+    timestamp updated_at
+  }
+  roadmap_steps {
+    uuid id PK
+    uuid roadmap_id FK
+    string step_title
+    text step_description
+    string required_skill
+    int estimated_duration_days
+    string status
+    timestamp created_at
+  }
+  cognitive_states {
+    uuid id PK
+    uuid user_id FK
+    float retention_score
+    float learning_speed
+    float focus_level
+    float consistency_score
+    string energy_pattern
+    float stress_indicator
+    timestamp updated_at
+  }
+  ai_feedback_logs {
+    uuid id PK
+    uuid user_id FK
+    string module_name
+    text input_prompt
+    text ai_response
+    int response_time_ms
+    string feedback_type
+    timestamp created_at
+  }
+  notifications {
+    uuid id PK
+    uuid user_id FK
+    string title
+    text message
+    string notification_type
+    bool is_read
+    timestamp created_at
+  }
+  user_activity_logs {
+    uuid id PK
+    uuid user_id FK
+    string activity_type
+    text activity_description
+    string device_type
+    string ip_address
+    timestamp created_at
+  }
+  sync_logs {
+    uuid id PK
+    uuid user_id FK
+    string sync_type
+    string sync_status
+    int records_synced
+    string device_id
+    timestamp created_at
+  }
+  devices {
+    uuid id PK
+    uuid user_id FK
+    string device_name
+    string device_type
+    string os_version
+    timestamp last_sync_at
+    timestamp created_at
+  }
+  system_metrics {
+    uuid id PK
+    string service_name
+    float cpu_usage
+    float memory_usage
+    int request_count
+    int error_count
+    float avg_response_time
+    timestamp recorded_at
+  }
+  redis_cache_metrics {
+    uuid id PK
+    string cache_key
+    int hit_count
+    int miss_count
+    int ttl_seconds
+    timestamp last_accessed
+  }
+  gemma_inference_metrics {
+    uuid id PK
+    uuid user_id FK
+    string module_name
+    int input_tokens
+    int output_tokens
+    int latency_ms
+    bool success_status
+    timestamp created_at
+  }
+  user_settings {
+    uuid id PK
+    uuid user_id FK
+    string theme
+    bool notification_enabled
+    bool offline_mode
+    string preferred_difficulty
+    string language
+    timestamp updated_at
+  }
+  achievements {
+    uuid id PK
+    string title
+    text description
+    string badge_icon
+    timestamp created_at
+  }
+  user_achievements {
+    uuid id PK
+    uuid user_id FK
+    uuid achievement_id FK
+    timestamp earned_at
+  }
+  feedback_reports {
+    uuid id PK
+    uuid user_id FK
+    string report_type
+    text report_message
+    string status
+    text admin_response
+    timestamp created_at
+    timestamp updated_at
+  }`,
+
+user:`erDiagram
+  users ||--|| user_profiles : has
+  users ||--|| user_settings : configures
+  users ||--o{ user_achievements : earns
+  users ||--o{ notifications : receives
+  users ||--o{ feedback_reports : files
+  users ||--o{ reminders : has
+  achievements ||--o{ user_achievements : awarded_as
+  users {
+    uuid id PK
+    string full_name
+    string email
+    string password_hash
+    string profile_image
+    string role
+    bool is_verified
+    timestamp created_at
+    timestamp last_login
+  }
+  user_profiles {
+    uuid id PK
+    uuid user_id FK
+    string career_goal
+    string experience_level
+    string education_level
+    string country
+    string preferred_language
+    string learning_style
+    float daily_study_hours
+    string focus_area
+    text bio
+  }
+  user_settings {
+    uuid id PK
+    uuid user_id FK
+    string theme
+    bool notification_enabled
+    bool offline_mode
+    string preferred_difficulty
+    string language
+  }
+  notifications {
+    uuid id PK
+    uuid user_id FK
+    string title
+    string notification_type
+    bool is_read
+    timestamp created_at
+  }
+  reminders {
+    uuid id PK
+    uuid user_id FK
+    string title
+    text message
+    timestamp reminder_time
+    string status
+  }
+  achievements {
+    uuid id PK
+    string title
+    text description
+    string badge_icon
+  }
+  user_achievements {
+    uuid id PK
+    uuid user_id FK
+    uuid achievement_id FK
+    timestamp earned_at
+  }
+  feedback_reports {
+    uuid id PK
+    uuid user_id FK
+    string report_type
+    text report_message
+    string status
+    text admin_response
+  }`,
+
+learning:`erDiagram
+  users ||--o{ learning_sessions : attends
+  users ||--o{ adaptive_schedules : receives
+  users ||--o{ user_problem_attempts : submits
+  users ||--o{ weakness_analysis : analyzed
+  users ||--o{ cognitive_states : tracked_by
+  users ||--o{ ai_feedback_logs : generates
+  practice_problems ||--o{ user_problem_attempts : attempted_via
+  learning_sessions {
+    uuid id PK
+    uuid user_id FK
+    string session_type
+    timestamp start_time
+    timestamp end_time
+    int duration_minutes
+    float focus_score
+    string energy_level
+    string completion_status
+  }
+  practice_problems {
+    uuid id PK
+    string title
+    string difficulty
+    string category
+    text expected_solution
+    json tags
+  }
+  user_problem_attempts {
+    uuid id PK
+    uuid user_id FK
+    uuid problem_id FK
+    text submitted_answer
+    float evaluation_score
+    int time_taken_seconds
+    string mistake_category
+    text feedback
+    string attempt_status
+  }
+  adaptive_schedules {
+    uuid id PK
+    uuid user_id FK
+    date schedule_date
+    string task_title
+    string task_type
+    string priority
+    int estimated_duration
+    string time_slot
+    string status
+  }
+  weakness_analysis {
+    uuid id PK
+    uuid user_id FK
+    string skill_name
+    float weakness_score
+    text detected_issue
+    text recommended_action
+    string priority_level
+  }
+  cognitive_states {
+    uuid id PK
+    uuid user_id FK
+    float retention_score
+    float learning_speed
+    float focus_level
+    float consistency_score
+    string energy_pattern
+    float stress_indicator
+  }
+  ai_feedback_logs {
+    uuid id PK
+    uuid user_id FK
+    string module_name
+    text input_prompt
+    text ai_response
+    int response_time_ms
+    string feedback_type
+  }`,
+
+skills:`erDiagram
+  users ||--o{ user_skills : has
+  users ||--o{ learning_roadmaps : follows
+  learning_roadmaps ||--o{ roadmap_steps : contains
+  skill_graph ||--o{ skill_graph : depends_on
+  user_skills {
+    uuid id PK
+    uuid user_id FK
+    string skill_name
+    int current_level
+    int target_level
+    float confidence_score
+    timestamp last_practiced
+  }
+  skill_graph {
+    uuid id PK
+    string parent_skill
+    string child_skill
+    float dependency_weight
+    string difficulty_level
+  }
+  learning_roadmaps {
+    uuid id PK
+    uuid user_id FK
+    string roadmap_title
+    string target_role
+    int estimated_duration_months
+    float completion_percentage
+    string status
+  }
+  roadmap_steps {
+    uuid id PK
+    uuid roadmap_id FK
+    string step_title
+    text step_description
+    string required_skill
+    int estimated_duration_days
+    string status
+  }`,
+
+interview:`erDiagram
+  users ||--o{ interview_sessions : takes
+  interview_sessions ||--o{ interview_questions : contains
+  interview_questions ||--o{ interview_answers : answered_by
+  interview_sessions {
+    uuid id PK
+    uuid user_id FK
+    string target_role
+    string difficulty_level
+    timestamp session_start
+    timestamp session_end
+    float overall_score
+    float communication_score
+    float technical_score
+    float confidence_score
+  }
+  interview_questions {
+    uuid id PK
+    uuid session_id FK
+    text question_text
+    string question_type
+    string difficulty
+    text expected_answer
+  }
+  interview_answers {
+    uuid id PK
+    uuid question_id FK
+    text user_answer
+    float evaluation_score
+    text feedback
+    int response_time
+    timestamp created_at
+  }`,
+
+career:`erDiagram
+  users ||--o{ career_recommendations : gets
+  market_trends {
+    uuid id PK
+    string skill_name
+    int job_count
+    float average_salary
+    float trend_score
+    float growth_percentage
+    string source_platform
+    timestamp last_updated
+  }
+  career_recommendations {
+    uuid id PK
+    uuid user_id FK
+    string recommended_role
+    float match_score
+    string estimated_salary
+    string market_demand
+    float difficulty_score
+    string estimated_time_to_achieve
+    text roadmap_summary
+  }`,
+
+system:`erDiagram
+  users ||--o{ ai_feedback_logs : triggers
+  users ||--o{ gemma_inference_metrics : triggers
+  users ||--o{ user_activity_logs : logs
+  system_metrics {
+    uuid id PK
+    string service_name
+    float cpu_usage
+    float memory_usage
+    int request_count
+    int error_count
+    float avg_response_time
+    timestamp recorded_at
+  }
+  redis_cache_metrics {
+    uuid id PK
+    string cache_key
+    int hit_count
+    int miss_count
+    int ttl_seconds
+    timestamp last_accessed
+  }
+  gemma_inference_metrics {
+    uuid id PK
+    uuid user_id FK
+    string module_name
+    int input_tokens
+    int output_tokens
+    int latency_ms
+    bool success_status
+  }
+  ai_feedback_logs {
+    uuid id PK
+    uuid user_id FK
+    string module_name
+    text ai_response
+    int response_time_ms
+    string feedback_type
+  }
+  user_activity_logs {
+    uuid id PK
+    uuid user_id FK
+    string activity_type
+    string device_type
+    string ip_address
+    timestamp created_at
+  }`,
+
+device:`erDiagram
+  users ||--o{ devices : owns
+  users ||--o{ sync_logs : syncs
+  devices {
+    uuid id PK
+    uuid user_id FK
+    string device_name
+    string device_type
+    string os_version
+    timestamp last_sync_at
+    timestamp created_at
+  }
+  sync_logs {
+    uuid id PK
+    uuid user_id FK
+    string sync_type
+    string sync_status
+    int records_synced
+    string device_id
+    timestamp created_at
+  }`
+};
+
+let current = 'all';
+window.show = async function(key) {
+  current = key;
+  document.querySelectorAll('.grp-btn').forEach(b=>b.classList.toggle('active', b.textContent.trim().toLowerCase().replace(/[^a-z]/g,'').includes(key==='all'?'all':key)));
+  document.getElementById('erd').innerHTML = '<div style="padding:20px;color:var(--color-text-secondary);font-size:13px">Rendering…</div>';
+  try {
+    const {svg} = await mermaid.render('erd-'+key+'-'+Date.now(), diagrams[key]);
+    document.getElementById('erd').innerHTML = svg;
+    document.querySelectorAll('#erd svg rect,#erd svg path[d]').forEach(el=>{
+      if(el.tagName==='rect'){el.setAttribute('rx','6');}
+    });
+  } catch(e){
+    document.getElementById('erd').innerHTML = '<div style="padding:20px;color:var(--color-text-secondary);font-size:13px">Could not render this view.</div>';
+  }
+};
+
+show('all');
+</script>
